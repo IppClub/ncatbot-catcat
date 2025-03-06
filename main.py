@@ -20,6 +20,13 @@ super_user = ""
 class CatCat(BasePlugin):
     name = "CatCat"  # 插件名称
     version = "1.0.4"  # 插件版本
+    dependencies = {
+        "PyYAML": ">=6.0.2",
+        "aiohttp": ">=3.11.13",
+        "ncatbot": ">=3.4.2",
+        "aiofiles": ">=24.1.0"
+    }
+
 
     @bot.group_event()
     async def on_group_event(self, msg: GroupMessage):
