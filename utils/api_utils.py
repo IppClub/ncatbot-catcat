@@ -1,11 +1,12 @@
-import aiohttp
 from ncatbot.utils.logger import get_log
+import aiohttp
 
 _log = get_log()
 
+
 async def call_deepseek_chat_api(api_key, messages):
     url = "https://api.deepseek.com/chat/completions"
-    
+
     headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
@@ -27,24 +28,14 @@ async def call_deepseek_chat_api(api_key, messages):
             async with session.post(url, json=data, headers=headers) as response:
                 if response.status == 200:
                     result = await response.json()
-                    return result['choices'][0]['message']['content']
+                    try:
+                        return result['choices'][0]['message']['content']
+                    except KeyError:
+                        raise KeyError(f"提取回复时出错，回复内容：{result}")
                 else:
-                    _log.error(f"API调用失败：{response.status}")
-                    return None
+                    error_text = await response.text()
+                    _log.error(f"API调用失败：状态码 {response.status}，响应内容：{error_text}")
+    except aiohttp.ClientError as e:
+        _log.error(f"网络请求出错：{str(e)}")
     except Exception as e:
-        _log.error(f"API调用出错：{str(e)}")
-        return None
-
-def format_group_chat(messages):
-    """
-    将原始群聊记录转换为 API 接受的格式
-    输入示例：
-        [
-            166658.6419105 manager(10101): init catcat
-            166658.6430702 何山(7894652): @猫猫 你是谁,
-        ]
-    """
-    formatted_messages = ""
-    for message in messages:
-        formatted_messages += f"{' '.join(message.split()[1:])}\n"
-    return [{"role": "user", "content": formatted_messages}]
+        _log.error(f"未知错误：{str(e)}")

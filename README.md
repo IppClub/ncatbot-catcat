@@ -1,6 +1,6 @@
 # CatCat 插件
 
-CatCat 是一个用于 Ncatbot 的插件，提供了群聊消息的自动回复功能。
+CatCat 是一个用于 [Ncatbot](https://github.com/liyihao1110/ncatbot) 的插件，提供了群聊消息的自动回复功能。
 
 ## 功能
 
