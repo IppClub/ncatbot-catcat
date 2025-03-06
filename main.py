@@ -19,7 +19,7 @@ super_user = ""
 
 class CatCat(BasePlugin):
     name = "CatCat"  # 插件名称
-    version = "1.0.3"  # 插件版本
+    version = "1.0.4"  # 插件版本
 
     @bot.group_event()
     async def on_group_event(self, msg: GroupMessage):
