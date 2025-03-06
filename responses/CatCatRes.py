@@ -13,7 +13,7 @@ def format_group_chat(messages):
     formatted_messages = ""
     for message in messages:
         formatted_messages += f"{' '.join(message.split()[1:])}\n"
-    print(formatted_messages)
+    # print(formatted_messages)
     return [{"role": "user", "content": formatted_messages}]
 
 

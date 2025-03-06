@@ -1,6 +1,6 @@
 from ncatbot.utils.logger import get_log
 import aiohttp
-
+import json
 _log = get_log()
 
 
@@ -23,8 +23,9 @@ async def call_deepseek_chat_api(api_key, messages):
     try:
         async with aiohttp.ClientSession() as session:
             # log messages file
-            with open("plugins/CatCat/logs/deepseek_api/messages.log", "w", encoding="utf-8") as f:
-                f.write(f"{{ {messages} }}\n")
+            with open("plugins/CatCat/logs/deepseek_api/messages.log", "a", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+                f.write("\n")
             async with session.post(url, json=data, headers=headers) as response:
                 if response.status == 200:
                     result = await response.json()
