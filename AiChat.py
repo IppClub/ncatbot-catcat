@@ -1,11 +1,12 @@
 from ncatbot.utils.logger import get_log
-import requests
+import aiohttp  # 新增
+import asyncio  # 新增
 _log = get_log()
 
 
-def call_deepseek_chat_api(api_key, messages):
+async def call_deepseek_chat_api(api_key, messages):
 	"""
-	调用 DeepSeek Chat API
+	异步调用 DeepSeek Chat API
 	参数：
 		api_key: 你的 API 密钥
 		messages: 对话消息列表，格式示例：
@@ -31,17 +32,18 @@ def call_deepseek_chat_api(api_key, messages):
 	}
 
 	try:
-		response = requests.post(url, headers=headers, json=data)
-		response.raise_for_status()  # 检查 HTTP 错误
-		result = response.json()
+		async with aiohttp.ClientSession() as session:
+			async with session.post(url, headers=headers, json=data) as response:
+				response.raise_for_status()
+				result = await response.json()
 
-		if "choices" in result:
-			return result["choices"][0]["message"]["content"]
-		else:
-			_log.info("未收到有效响应")
-			return ""
+				if "choices" in result:
+					return result["choices"][0]["message"]["content"]
+				else:
+					_log.info("未收到有效响应")
+					return ""
 
-	except requests.exceptions.RequestException as e:
+	except aiohttp.ClientError as e:
 		_log.info(f"请求异常：{str(e)}")
 		return ""
 	except Exception as e:
@@ -54,11 +56,13 @@ def format_group_chat(messages):
 	将原始群聊记录转换为 API 接受的格式
 	输入示例：
 		[
-			{"user": "开发者A", "text": "Dora SSR 的物理系统怎么优化？"},
-			{"user": "开发者B", "text": "试试看文档第三章的示例代码"}
+			"开发者A(123456): 系统怎么优化?",
+			"开发者B(987654): 试试看文档第三章的示例代码"
 		]
 	"""
+	formatted_messages = ""
+	for message in messages:
+		formatted_messages += f"{message}\n"
 	return [
-		{"role": "user", "content": f"{msg['user']}：{msg['text']}"}
-		for msg in messages
-	]
+		{"role": "user", "content": formatted_messages}
+  ]

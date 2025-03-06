@@ -8,6 +8,7 @@ from ncatbot.utils.logger import get_log
 _log = get_log()
 from .responses.CatCatRes import dora_ssr_response
 import yaml
+from collections import deque
 
 bot = CompatibleEnrollment  # 兼容回调函数注册器
 
@@ -21,7 +22,7 @@ cat_prompt = ""
 
 class CatCat(BasePlugin):
     name = "CatCat" # 插件名称
-    version = "1.0.0" # 插件版本
+    version = "1.0.1" # 插件版本
 
     @bot.group_event()
     async def on_group_event(self, msg: GroupMessage):
@@ -35,24 +36,24 @@ class CatCat(BasePlugin):
 
         # Check if the group_id exists in global_chat_histories
         if msg.group_id not in global_chat_histories:
-            global_chat_histories[msg.group_id] = []
+            global_chat_histories[msg.group_id] = deque(maxlen=20)
         if msg.group_id not in last_group_message_time:
             last_group_message_time[msg.group_id] = -10
 
         
         force_reply = False
-        text_content = {"user": msg.sender.nickname, "text": ""}
-        
+        text_content = ""
         for message in msg.message:
             if message["type"] == "text":
-                text_content["text"] += message["data"]["text"]
+                text_content += (message["data"]["text"] + ",")
             if message["type"] == "at" and message["data"]["qq"] == config.bt_uin:
-                text_content["text"] += "@猫猫"
+                text_content =  f"@猫猫({config.bt_uin}) " + text_content
                 force_reply = True
 
+        text_content = f"{msg.sender.nickname}({msg.sender.user_id}): {text_content}"
+
         # Append the new message to the appropriate chat history
-        chat_history = global_chat_histories[msg.group_id]
-        chat_history.append(text_content)
+        global_chat_histories[msg.group_id].append(text_content)
         
         current_time = asyncio.get_event_loop().time()
         if current_time - last_group_message_time[msg.group_id] < 10 and not force_reply:
@@ -61,13 +62,13 @@ class CatCat(BasePlugin):
 
         
 
-        _log.info(f"最近一条群聊记录：{chat_history[-1]}")
+        _log.info(f"最近一条群聊记录：{global_chat_histories[msg.group_id][-1]}")
         _log.info("开始生成回复……")
-        response = dora_ssr_response(api_key, chat_history[-20:], cat_prompt)
+        response = await dora_ssr_response(api_key, global_chat_histories[msg.group_id], cat_prompt)
         _log.info(f"猫猫：{response}")
         if response == "":
             return
-        chat_history.append({"user": "猫猫", "text": response})
+        global_chat_histories[msg.group_id].append(f"猫猫({config.bt_uin}): {response}")
         await self.api.post_group_msg(msg.group_id, response)
 
 
