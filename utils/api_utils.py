@@ -15,12 +15,15 @@ async def call_deepseek_chat_api(api_key, messages):
     data = {
         "model": "deepseek-chat",
         "messages": messages,
-        "temperature": 0.3,
+        "temperature": 1.3,
         "max_tokens": 256,
     }
 
     try:
         async with aiohttp.ClientSession() as session:
+            # log messages file
+            with open("plugins/CatCat/logs/deepseek_api/messages.log", "w", encoding="utf-8") as f:
+                f.write(f"{{ {messages} }}\n")
             async with session.post(url, json=data, headers=headers) as response:
                 if response.status == 200:
                     result = await response.json()
@@ -44,5 +47,4 @@ def format_group_chat(messages):
     formatted_messages = ""
     for message in messages:
         formatted_messages += f"{' '.join(message.split()[1:])}\n"
-    print(formatted_messages)
     return [{"role": "user", "content": formatted_messages}]
