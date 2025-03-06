@@ -3,23 +3,25 @@
 from ncatbot.plugin import BasePlugin, CompatibleEnrollment
 from ncatbot.core.message import GroupMessage
 from ncatbot.utils.logger import get_log
-from .AiChat import geneResponse
-_log = get_log()
+
+from .AiChat import gene_response
+
 import yaml
+
+_log = get_log()
 
 bot = CompatibleEnrollment  # 兼容回调函数注册器
 
-
 global_chat_histories = {}
-
 last_group_message_time = {}
 
 api_key = ""
 cat_prompt = ""
 
+
 class CatCat(BasePlugin):
-    name = "CatCat" # 插件名称
-    version = "1.0.2" # 插件版本
+    name = "CatCat"  # 插件名称
+    version = "1.0.2"  # 插件版本
 
     @bot.group_event()
     async def on_group_event(self, msg: GroupMessage):
@@ -30,10 +32,8 @@ class CatCat(BasePlugin):
     @bot.group_event()
     async def on_group_message(self, msg: GroupMessage):
         global last_group_message_time, global_chat_histories
-        response = await geneResponse(api_key, global_chat_histories, last_group_message_time, msg, cat_prompt)
+        response = await gene_response(api_key, global_chat_histories, last_group_message_time, msg, cat_prompt)
         await self.api.post_group_msg(msg.group_id, response)
-
-
 
     async def on_load(self):
         print("插件加载中……")
