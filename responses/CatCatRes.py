@@ -37,4 +37,3 @@ async def cat_cat_response(api_key, chat_history, prompt):
         return response.strip('"') if response else ""
     except Exception as e:
         print(f"CatCat响应生成错误: {str(e)}")
-        return ""

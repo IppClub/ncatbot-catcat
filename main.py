@@ -14,7 +14,7 @@ bot = CompatibleEnrollment  # 兼容回调函数注册器
 
 api_key = ""
 cat_prompt = ""
-manager_id = ""
+super_user = ""
 
 
 class CatCat(BasePlugin):
@@ -36,7 +36,7 @@ class CatCat(BasePlugin):
     @bot.private_event()
     async def on_private_message(self, msg: PrivateMessage):
         global cat_prompt
-        if msg.user_id != manager_id:  # 修改判断条件
+        if msg.user_id != super_user:  # 修改判断条件
             return
         # 定义的回调函数
         if msg.raw_message == "prompt":
@@ -54,12 +54,13 @@ class CatCat(BasePlugin):
             config_data = yaml.safe_load(f)
             global api_key
             api_key = config_data["api_key"]
-            global manager_id
-            manager_id = config_data["manager_id"]
+            global super_user
+            super_user = config_data["manager_id"]
 
         with open("plugins/CatCat/config/cat_prompt.txt", "r", encoding="utf-8") as f:
             global cat_prompt
             cat_prompt = f.read()
+
         # 插件加载时执行的操作, 可缺省
         print(f"{self.name} 插件已加载")
         print(f"插件版本: {self.version}")

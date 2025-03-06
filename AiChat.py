@@ -15,7 +15,6 @@ global_chat_histories = []
 
 async def gene_response(api_key, msg: GroupMessage, cat_prompt):
     # Check if the group_id exists in global_chat_histories
-    # 判断文件是否存在
     history_file = f"plugins/CatCat/logs/{msg.group_id}_history.log"
     # 使用上下文管理器处理文件操作
     try:
@@ -41,7 +40,7 @@ async def gene_response(api_key, msg: GroupMessage, cat_prompt):
     text_content = f"{msg.sender.nickname}({msg.sender.user_id}): {text_content}"
 
     # Append the new message to the appropriate chat history
-    with open(f"plugins/CatCat/logs/{msg.group_id}_history.log", "a", encoding="utf-8") as f:
+    with open(history_file, "a", encoding="utf-8") as f:
         f.write(f"{asyncio.get_event_loop().time()} {text_content}\n")
 
     current_time = asyncio.get_event_loop().time()
@@ -49,13 +48,14 @@ async def gene_response(api_key, msg: GroupMessage, cat_prompt):
         return
 
     _log.info("开始生成回复……")
-    with open(f"plugins/CatCat/logs/{msg.group_id}_history.log", "r", encoding="utf-8") as f:
+    with open(history_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
         chat_history = lines[-min(10, len(lines)):]
-    response = await cat_cat_response(api_key, chat_history, cat_prompt)
-    _log.info(f"猫猫：{response}")
-    if response == "":
+    if response := await cat_cat_response(api_key, chat_history, cat_prompt):
+        _log.info(f"猫猫：{response}")
+    else:
         return
-    with open(f"plugins/CatCat/logs/{msg.group_id}_history.log", "a", encoding="utf-8") as f:
+
+    with open(history_file, "a", encoding="utf-8") as f:
         f.write(f"{asyncio.get_event_loop().time()} 猫猫({config.bt_uin}): {response}\n")
     return response

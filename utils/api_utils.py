@@ -25,10 +25,14 @@ async def call_deepseek_chat_api(api_key, messages):
             async with session.post(url, json=data, headers=headers) as response:
                 if response.status == 200:
                     result = await response.json()
-                    return result['choices'][0]['message']['content']
+                    try:
+                        return result['choices'][0]['message']['content']
+                    except KeyError:
+                        raise KeyError(f"提取回复时出错，回复内容：{result}")
                 else:
-                    _log.error(f"API调用失败：{response.status}")
-                    return
+                    error_text = await response.text()
+                    _log.error(f"API调用失败：状态码 {response.status}，响应内容：{error_text}")
+    except aiohttp.ClientError as e:
+        _log.error(f"网络请求出错：{str(e)}")
     except Exception as e:
-        _log.error(f"API调用出错：{str(e)}")
-        return
+        _log.error(f"未知错误：{str(e)}")
