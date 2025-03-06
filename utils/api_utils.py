@@ -33,17 +33,16 @@ async def call_deepseek_chat_api(api_key, messages):
         return None
 
 def format_group_chat(messages):
-	"""
-	将原始群聊记录转换为 API 接受的格式
-	输入示例：
-		[
-			"开发者A(123456): 系统怎么优化?",
-			"开发者B(987654): 试试看文档第三章的示例代码"
-		]
-	"""
-	formatted_messages = ""
-	for message in messages:
-		formatted_messages += f"{message}\n"
-	return [
-		{"role": "user", "content": formatted_messages}
-  ]
+    """
+    将原始群聊记录转换为 API 接受的格式
+    输入示例：
+        [
+            166658.6419105 manager(10101): init catcat
+            166658.6430702 何山(7894652): @猫猫 你是谁,
+        ]
+    """
+    formatted_messages = ""
+    for message in messages:
+        formatted_messages += f"{' '.join(message.split()[1:])}\n"
+    print(formatted_messages)
+    return [{"role": "user", "content": formatted_messages}]
