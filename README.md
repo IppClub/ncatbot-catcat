@@ -7,6 +7,17 @@ CatCat 是一个用于 [Ncatbot](https://github.com/liyihao1110/ncatbot) 的插�
 - 自动回复群聊消息
 - 兼容回调函数注册
 - 支持自定义回复内容
+- 支持热修改prompt
+- 支持群聊历史记录存储
+- 支持@触发强制回复
+- 支持管理员远程配置
+
+## 特性
+
+- 采用deepseek-chat作为对话引擎
+- 支持10条历史消息上下文
+- 防刷屏：消息间隔小于10秒不触发回复
+- 日志完整记录，支持故障排查
 
 ## 安装
 
@@ -21,6 +32,7 @@ CatCat 是一个用于 [Ncatbot](https://github.com/liyihao1110/ncatbot) 的插�
 
 ```yaml
 api_key: "your_api_key_here"
+manager_id: "your_manager_qq_id"
 ```
 
 在 `cat_prompt.txt` 文件中，添加自定义的回复提示内容。
