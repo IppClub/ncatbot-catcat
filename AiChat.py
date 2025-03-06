@@ -1,68 +1,47 @@
 from ncatbot.utils.logger import get_log
-import aiohttp  # 新增
-import asyncio  # 新增
+from ncatbot.core.message import GroupMessage
+from collections import deque
+from ncatbot.utils.config import config
+import asyncio
+from .responses.CatCatRes import cat_cat_response
+
 _log = get_log()
 
+async def geneResponse(api_key, global_chat_histories, last_group_message_time, msg: GroupMessage, cat_prompt):
+    # Check if the group_id exists in global_chat_histories
+        if msg.group_id not in global_chat_histories:
+            global_chat_histories[msg.group_id] = deque(maxlen=20)
+        if msg.group_id not in last_group_message_time:
+            last_group_message_time[msg.group_id] = -10
 
-async def call_deepseek_chat_api(api_key, messages):
-	"""
-	异步调用 DeepSeek Chat API
-	参数：
-		api_key: 你的 API 密钥
-		messages: 对话消息列表，格式示例：
-			[
-				{"role": "user", "content": "你好"},
-				{"role": "assistant", "content": "你好！有什么可以帮助你的？"},
-				{"role": "user", "content": "请介绍下上海"}
-			]
-	"""
-	url = "https://api.deepseek.com/chat/completions"
+        
+        force_reply = False
+        text_content = ""
+        for message in msg.message:
+            if message["type"] == "text":
+                text_content += (message["data"]["text"] + ",")
+            if message["type"] == "at" and message["data"]["qq"] == config.bt_uin:
+                text_content =  f"@猫猫({config.bt_uin}) " + text_content
+                force_reply = True
 
-	headers = {
-		"Content-Type": "application/json",
-		"Accept": "application/json",
-		"Authorization": f"Bearer {api_key}"
-	}
+        text_content = f"{msg.sender.nickname}({msg.sender.user_id}): {text_content}"
 
-	data = {
-		"model": "deepseek-chat", # 根据需要选择模型
-		"messages": messages,
-		"temperature": 0.3,
-		"max_tokens": 256,
-	}
+        # Append the new message to the appropriate chat history
+        global_chat_histories[msg.group_id].append(text_content)
+        
+        current_time = asyncio.get_event_loop().time()
+        if current_time - last_group_message_time[msg.group_id] < 10 and not force_reply:
+            return
+        last_group_message_time[msg.group_id] = current_time
 
-	try:
-		async with aiohttp.ClientSession() as session:
-			async with session.post(url, headers=headers, json=data) as response:
-				response.raise_for_status()
-				result = await response.json()
+        
 
-				if "choices" in result:
-					return result["choices"][0]["message"]["content"]
-				else:
-					_log.info("未收到有效响应")
-					return ""
-
-	except aiohttp.ClientError as e:
-		_log.info(f"请求异常：{str(e)}")
-		return ""
-	except Exception as e:
-		_log.info(f"处理响应时发生错误：{str(e)}")
-		return ""
-
-
-def format_group_chat(messages):
-	"""
-	将原始群聊记录转换为 API 接受的格式
-	输入示例：
-		[
-			"开发者A(123456): 系统怎么优化?",
-			"开发者B(987654): 试试看文档第三章的示例代码"
-		]
-	"""
-	formatted_messages = ""
-	for message in messages:
-		formatted_messages += f"{message}\n"
-	return [
-		{"role": "user", "content": formatted_messages}
-  ]
+        with open(f"plugins/CatCat/logs/{msg.group_id}_history.log", "a", encoding="utf-8") as f:
+            f.write(f"{asyncio.get_event_loop().time()}: Group {msg.group_id} - {list(global_chat_histories[msg.group_id])}\n")
+        _log.info("开始生成回复……")
+        response = await cat_cat_response(api_key, global_chat_histories[msg.group_id], cat_prompt)
+        _log.info(f"猫猫：{response}")
+        if response == "":
+            return
+        global_chat_histories[msg.group_id].append(f"猫猫({config.bt_uin}): {response}")
+        return response

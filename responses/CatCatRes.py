@@ -1,6 +1,6 @@
-from ..AiChat import call_deepseek_chat_api,format_group_chat  
+from ..utils.api_utils import call_deepseek_chat_api, format_group_chat  
 
-async def dora_ssr_response(api_key, chat_history, prompt):
+async def cat_cat_response(api_key, chat_history, prompt):
 	"""
 	参数：
 		chat_history: 原始群聊记录（包含用户和文本的字典列表）
