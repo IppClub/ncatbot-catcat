@@ -50,12 +50,26 @@ async def gene_response(api_key, msg: GroupMessage, cat_prompt):
     _log.info("开始生成回复……")
     with open(history_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
-        chat_history = lines[-min(10, len(lines)):]
+        result = []
+        for line in reversed(lines):
+            try:
+                if len(result) >= 10:
+                    break
+                parts = line.strip().split()
+                if len(parts) < 3:
+                    continue
+                this_content = parts[2]
+                if not any(this_content in content for content in result):
+                    result.append(line)
+            except Exception as e:
+                print(f"处理历史记录出错: {str(e)}")
+                continue
+        chat_history = reversed(result)
     if response := await cat_cat_response(api_key, chat_history, cat_prompt):
         _log.info(f"猫猫：{response}")
     else:
         return
-
+      
     with open(history_file, "a", encoding="utf-8") as f:
-        f.write(f"{asyncio.get_event_loop().time()} 猫猫({config.bt_uin}): {response}\n")
+        f.write(f"{asyncio.get_event_loop().time()} 猫猫({config.bt_uin}): {'\\'.join(response.split('\n'))}\n")
     return response
