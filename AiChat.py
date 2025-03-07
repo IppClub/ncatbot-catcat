@@ -5,6 +5,7 @@ from ncatbot.utils.config import config
 import asyncio
 import os
 import aiofiles
+import yaml
 
 from .responses.CatCatRes import cat_cat_response
 
@@ -44,16 +45,26 @@ async def gene_response(api_key, msg: GroupMessage, cat_prompt):
         f.write(f"{asyncio.get_event_loop().time()} {text_content}\n")
 
     current_time = asyncio.get_event_loop().time()
-    if current_time - last_group_message_time < 10 and not force_reply:
+    try:
+        with open("plugins/CatCat/config/config.yaml", "r", encoding="utf-8") as f:
+            message_dalay = int(yaml.safe_load(f)["message_delay"])
+    except:
+        message_dalay = 10
+    if current_time - last_group_message_time < message_dalay and not force_reply:
         return
 
     _log.info("开始生成回复……")
     with open(history_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
         result = []
+        try:
+            with open("plugins/CatCat/config/config.yaml", "r", encoding="utf-8") as f:
+                max_history = int(yaml.safe_load(f)["max_history"])
+        except:
+            max_history = 5
         for line in reversed(lines):
             try:
-                if len(result) >= 10:
+                if len(result) >= max_history:
                     break
                 parts = line.strip().split()
                 if len(parts) < 3:

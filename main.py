@@ -19,13 +19,7 @@ super_user = ""
 
 class CatCat(BasePlugin):
     name = "CatCat"  # 插件名称
-    version = "1.0.4"  # 插件版本
-    dependencies = {
-        "PyYAML": ">=6.0.2",
-        "aiohttp": ">=3.11.13",
-        "ncatbot": ">=3.4.2",
-        "aiofiles": ">=24.1.0"
-    }
+    version = "1.0.5"  # 插件版本
 
 
     @bot.group_event()
@@ -38,14 +32,14 @@ class CatCat(BasePlugin):
     async def on_group_message(self, msg: GroupMessage):
         _log.info(f"{msg.sender.nickname}({msg.sender.user_id}): {msg.raw_message[:10]}")
         response = await gene_response(api_key, msg, cat_prompt)
-        await self.api.post_group_msg(msg.group_id, response)
+        # await self.api.post_private_msg(super_user, text=f"CatCat回复：{response}")
+        await self.api.post_group_msg(msg.group_id, response, reply=msg.message_id)
 
     @bot.private_event()
     async def on_private_message(self, msg: PrivateMessage):
         global cat_prompt
         if msg.user_id != super_user:  # 修改判断条件
             return
-        # 定义的回调函数
         if msg.raw_message == "prompt":
             await self.api.post_private_msg(msg.sender.user_id, text=cat_prompt)
         elif msg.raw_message[:10] == "set_prompt":

@@ -29,8 +29,8 @@ async def cat_cat_response(api_key, chat_history, prompt):
     try:
         messages = [
             {"role": "system", "content": prompt},
+            {"role": "system", "content": "请根据上述规则判断是否需要回复下面的问题，并直接输入你想说的话，不需要任何前缀后缀："},
             *format_group_chat(chat_history),
-            {"role": "user", "content": "请根据上述规则判断是否需要回复，并严格按格式输出："}
         ]
 
         response = await call_deepseek_chat_api(api_key, messages)
