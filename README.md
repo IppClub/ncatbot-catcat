@@ -33,7 +33,12 @@ CatCat 是一个用于 [Ncatbot](https://github.com/liyihao1110/ncatbot) 的插�
 ```yaml
 api_key: "your_api_key_here"
 manager_id: "your_manager_qq_id"
+message_delay: <message_delay>
+max_history: <max_history>
 ```
+
+其中 `message_dalay` 表示消息检测的延迟
+其中 `max_history` 表示上下文联想的最大长度
 
 在 `cat_prompt.txt` 文件中，添加自定义的回复提示内容。
 
