@@ -19,7 +19,7 @@ super_user = ""
 
 class CatCat(BasePlugin):
     name = "CatCat"  # 插件名称
-    version = "1.0.5"  # 插件版本
+    version = "1.0.6"  # 插件版本
 
 
     @bot.group_event()
@@ -33,7 +33,8 @@ class CatCat(BasePlugin):
         _log.info(f"{msg.sender.nickname}({msg.sender.user_id}): {msg.raw_message[:10]}")
         response = await gene_response(api_key, msg, cat_prompt)
         # await self.api.post_private_msg(super_user, text=f"CatCat回复：{response}")
-        await self.api.post_group_msg(msg.group_id, response, reply=msg.message_id)
+        if response:
+            await self.api.post_group_msg(msg.group_id, response, reply=msg.message_id)
 
     @bot.private_event()
     async def on_private_message(self, msg: PrivateMessage):
